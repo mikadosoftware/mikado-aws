@@ -113,10 +113,10 @@ def test_upload(name):
     s3.upload_file(filename, name, filename)
     
 if __name__ == '__main__':
-    #list_buckets()
+    list_buckets()
     name='test.goodtechdad.com'
     #add_bucket(name)
     #configure_bucket_for_webhost(name)
     #
     #bucket_acls(name)
-    test_upload(name)
+    #test_upload(name)

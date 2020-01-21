@@ -32,4 +32,16 @@ https://aws.amazon.com/premiumsupport/knowledge-center/cloudfront-serve-static-w
 when creating a cloudfront we yse that above endpoint
 
 
+Getting a HTTPS Certificate
+===========================
+
+Let's Encrypt is an excellent provider of free, automated certificates.
+But to get one, we need to demonstrate to LetsEncrypt we control the
+domain we are needing a certificate for.
+
+The way we shall do this is to put a LetsEncrypt provided GUID into the
+TXT record of our Route53 hosted DNS.
+
+Then we shall use certbot to generate the certificates.  At which point we can
+investigate them and then upload to AWS to be part of our front end.
 

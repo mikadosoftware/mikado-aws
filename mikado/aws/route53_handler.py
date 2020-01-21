@@ -1,12 +1,11 @@
 #!/bin/env python
-"""
-
-
-https://docs.aws.amazon.com/AmazonS3/latest/dev/VirtualHosting.html
+"""https://docs.aws.amazon.com/AmazonS3/latest/dev/VirtualHosting.html
 
 Example CNAME Method
 
-This example uses www.johnsmith.net as the bucket name and homepage.html as the key name. To use this method, you must configure your DNS name as a CNAME alias for bucketname.s3.amazonaws.com.
+This example uses www.johnsmith.net as the bucket name and
+homepage.html as the key name. To use this method, you must configure
+your DNS name as a CNAME alias for bucketname.s3.amazonaws.com.
 
 The URL is as follows:
 
@@ -59,13 +58,13 @@ Using boto ... :-)
 Or use lets encrypt
 https://medium.com/@e_99254/how-to-add-a-letsencrypt-certificate-to-a-site-hosted-on-s3-cloudfront-e22e13a36a45
 
-
-
-
-
 """
 from pprint import pprint as pp
 import boto3
+
+def get_r53_client():
+    return boto3.client('route53')
+
 
 class R53Zone():
     def __init__(self, d):
@@ -74,8 +73,12 @@ class R53Zone():
         self.ResourceRecordSetCount = d['ResourceRecordSetCount']
         self.Config = d['Config']
         self.Name = d['Name']
+        ### fill out RRS
+        r53 = get_r53_client()
+        self.rrs = r53.list_resource_record_sets(HostedZoneId=self.Id)
+
     def __repr__(self):
-        return "{}-{}".format(self.Name, self.ResourceRecordSetCount)
+        return "{}-{} RRS".format(self.Name, self.ResourceRecordSetCount)
     def fetch_zone(self):
         """Retireve the data about me """
         pass
@@ -86,23 +89,86 @@ def foo():
     r53 = get_r53_client()
     zone = r53.get_hosted_zone(Id=Id)
     pp(zone)
-    rrs = r53.list_resource_record_sets(HostedZoneId=Id)
-    pp(rrs['ResourceRecordSets'])
+    #rrs = r53.list_resource_record_sets(HostedZoneId=Id)
+    #pp(rrs['ResourceRecordSets'])
     
-def get_r53_client():
-    return boto3.client('route53')
 
 def get_zones():
     zonesd = {}
     r53 = get_r53_client()
     _zones = r53.list_hosted_zones()
     for zone in _zones['HostedZones']:
+        
         o = R53Zone(zone)
         print(o)
         zonesd[o.Name] = o
     return zonesd
 
+def get_this_zone(domainname):
+    if not domainname.endswith('.'):
+        domainname = domainname + "."
+    # we assume good entry data - ie that we own this.
+    
+    r53 = get_r53_client()
+    _zones = r53.list_hosted_zones()
+    o = None
+    for zone in _zones['HostedZones']:
+        print(zone['Name'], )
+        if zone['Name'] == domainname:
+            o = R53Zone(zone)
+    return o
+
+### change - add txt
+#
+def mk_change_request(hostedZoneId):
+    """ """
+    change = {
+        'Comment': 'COmment1',
+        'Changes': [
+            {
+                'Action':'UPSERT',
+                'ResourceRecordSet': {
+                    'Name': 'iapprove.net.',
+                    'Type': 'TXT',
+                    'TTL': 300,
+                    'ResourceRecords': [
+                        {
+                            'Value': '"Testing TXT adding certbot 12345"',
+                        },
+                    ],
+#                    'AliasTarget': {
+#                        'HostedZoneId': hostedZoneId,
+#                        'DNSName': 'iapprove.net.',
+#                        'EvaluateTargetHealth': False
+#                    },
+                  }
+            },
+        ]
+    }
+    #response = client.change_resource_record_sets(
+    
+    #return change
+    r53 = get_r53_client()
+    results = r53.change_resource_record_sets(
+           HostedZoneId=hostedZoneId,
+           ChangeBatch=change)
+    pp(results)
+   # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/route53.html#Route53.Client.change_resource_record_sets
+    error='''An error occurred (InvalidInput) when calling the ChangeResourceRecordSets operation: Invalid request: 
+    Expected exactly one of 
+      [AliasTarget, 
+      all of [TTL, and ResourceRecords], 
+     or TrafficPolicyInstanceId], 
+         but found none in Change with [Action=UPSERT, Name=iapprove.net., 
+           Type=TXT, SetIdentifier=null] '''
+
+    
 if __name__ == '__main__':
-    zonesd = get_zones()
-    print(zonesd)
+    #zonesd = get_zones()
+    #print(zonesd)
     #foo()
+    o = get_this_zone('iapprove.net')
+    pp(o.rrs)
+    print(o.Id)
+    #mk_change_request(o.Id)
+    

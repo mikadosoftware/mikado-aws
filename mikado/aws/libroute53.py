@@ -1,38 +1,13 @@
 #!/bin/env python
 """
+library module providing basic route53 features via boto
 
+TODO: why am I sometimes got ns and sometimss not - how do i create DNS properly
+for a zone, and then do txt cert and then how do I get it on AWS / S3
 
-https://danieljamesscott.org/17-software/development/33-manipulating-aws-route53-entries-using-boto.html
+Then how do I host a dynamic web server on AWS/
 
-https://docs.aws.amazon.com/AmazonS3/latest/dev/VirtualHosting.html
-
-Example CNAME Method
-
-This example uses www.johnsmith.net as the bucket name and
-homepage.html as the key name. To use this method, you must configure
-your DNS name as a CNAME alias for bucketname.s3.amazonaws.com.
-
-The URL is as follows:
-
-http://www.johnsmith.net/homepage.html
-The example is as follows:
-
-GET /homepage.html HTTP/1.1
-Host: www.johnsmith.net
-
-Err that only works for non ssl !!!!
-
-
-https://bryce.fisher-fleig.org/blog/setting-up-ssl-on-aws-cloudfront-and-s3/
-
-From Bryce fisher:
-
-We want to host static files on AWS S3.
-Then have cloudfront do the https hand off and route via SNI
-
-SNI - extension to TLS, allowing one IP address to server multiple hostnames (ie a header in the TLS call) - its HTTP1.1 virtual hosts but for SSL
-
-
+THen use KMS form AWS?
 
 """
 from pprint import pprint as pp
@@ -64,7 +39,7 @@ def foo():
     Id = '/hostedzone/Z37ZH240XSI8D6'
     r53 = get_r53_client()
     zone = r53.get_hosted_zone(Id=Id)
-    pp(zone)
+
     rrs = r53.list_resource_record_sets(HostedZoneId=Id)
     pp(rrs['ResourceRecordSets'])
     
@@ -142,8 +117,9 @@ def mk_change_request(hostedZoneId):
 
     
 if __name__ == '__main__':
-    #zonesd = get_zones()
-    #print(zonesd)
+    zonesd = get_zones()
+    pp(zonesd)
+    import sys; sys.exit()
     o = get_this_zone('iapprove.net')
     pp(o.rrs)
     print(o.Id)

@@ -1,6 +1,13 @@
 Running a SSL Static website on AWS
 ===================================
 
+
+How to build Docker for AWS
+
+https://packer.io/intro/getting-started/build-image.html
+
+
+
 This will be a two-part manual.  The first part is to simply put a
 static website onto AWS behind SSL/TLS.  Then I shall transition to a
 dynamic webservice that uses the full stack of SDLC features.
@@ -45,3 +52,38 @@ TXT record of our Route53 hosted DNS.
 Then we shall use certbot to generate the certificates.  At which point we can
 investigate them and then upload to AWS to be part of our front end.
 
+
+Being able to update a DNS TXT record
+-------------------------------------
+
+My route53-handler is frigged to be able to upsert a TXT record.
+I will use this
+
+https://serverfault.com/questions/750902/how-to-use-lets-encrypt-dns-challenge-validation
+
+certbot -d www.iapprove.net --manual --preferred-challenges dns certonly
+
+
+Please deploy a DNS TXT record under the name
+_acme-challenge.www.iapprove.net with the following value:
+
+D8yXRY3EbeKiq7p2mROqutXxFI64z5YJDodfN1N4pLE
+
+Before continuing, verify the record is deployed.
+
+
+
+hallenges
+Failed authorization procedure. www.iapprove.net (dns-01): urn:ietf:params:acme:error:dns :: DNS problem: NXDOMAIN looking up TXT for _acme-challenge.www.iapprove.net - check that a DNS record exists for this domain
+
+IMPORTANT NOTES:
+ - The following errors were reported by the server:
+
+   Domain: www.iapprove.net
+   Type:   None
+   Detail: DNS problem: NXDOMAIN looking up TXT for
+   _acme-challenge.www.iapprove.net - check that a DNS record exists
+   for this domain
+ - Your account credentials have been saved in your Certbot
+   configuration directory at /etc/letsencrypt. You should make a
+   secure backup of this folder now. This configura
